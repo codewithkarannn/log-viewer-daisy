@@ -1,0 +1,173 @@
+<div class="max-w-5xl mx-auto flex flex-col gap-3 animate-fade-in">
+  <!-- Stage Hero Card -->
+  <div class="card bg-base-100 border border-base-200 shadow-sm rounded-2xl overflow-hidden">
+    <div class="p-4 sm:p-5">
+
+      <!-- Header: Title + Mode Selector Tabs -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-base-200">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-base-content tracking-tight">
+            Choose Log Directory
+          </h2>
+          <p class="text-xs sm:text-sm text-base-content/70 mt-0.5">
+            Select or specify the server directory containing your service logs to discover files.
+          </p>
+        </div>
+
+        <!-- Mode selector tabs -->
+        <div class="tabs tabs-boxed bg-base-200 p-1 rounded-xl self-start md:self-auto shrink-0">
+          <button
+            type="button"
+            class="tab tab-sm text-xs font-medium gap-1.5 rounded-lg transition-all"
+            [class.tab-active]="store.directoryMode() === 'server'"
+            (click)="store.directoryMode.set('server')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            <span>Server Directory</span>
+          </button>
+          <button
+            type="button"
+            class="tab tab-sm text-xs font-medium gap-1.5 rounded-lg transition-all"
+            [class.tab-active]="store.directoryMode() === 'direct'"
+            (click)="store.directoryMode.set('direct')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>Direct File Path</span>
+          </button>
+          <button
+            type="button"
+            class="tab tab-sm text-xs font-medium gap-1.5 rounded-lg transition-all"
+            [class.tab-active]="store.directoryMode() === 'upload'"
+            (click)="store.directoryMode.set('upload')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Upload Local</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode 1: Server Directory Mode Form -->
+      @if (store.directoryMode() === 'server') {
+        <form (ngSubmit)="store.scanDirectory()" class="flex flex-col gap-3 mt-3">
+          <div class="form-control">
+            <div class="flex items-center justify-between pb-1">
+              <span class="text-xs font-semibold text-base-content/80">Server Root Directory Path</span>
+              <span class="text-xs text-base-content/50 font-mono">Supports absolute paths on server</span>
+            </div>
+            <div class="relative flex items-center">
+              <span class="absolute left-3 text-base-content/40">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+              </span>
+              <input
+                type="text"
+                [ngModel]="store.directoryPath()"
+                (ngModelChange)="store.directoryPath.set($event)"
+                name="dirPath"
+                placeholder="/var/log or /Users/username/logs/..."
+                class="input input-sm h-9 w-full pl-9 pr-8 font-mono text-xs sm:text-sm rounded-lg border-base-300 focus:outline-primary/40 focus:border-primary"
+                [disabled]="store.isTraversing()" />
+              @if (store.directoryPath()) {
+                <button
+                  type="button"
+                  (click)="store.directoryPath.set('')"
+                  class="absolute right-2.5 text-base-content/40 hover:text-base-content transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Bottom Action Strip -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+            <div class="text-xs text-base-content/70 flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-info shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Scans for all <code class="font-mono text-xs bg-base-200 px-1 py-0.5 rounded">.log</code> and <code class="font-mono text-xs bg-base-200 px-1 py-0.5 rounded">.txt</code> files in this folder.</span>
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-sm btn-primary h-9 min-h-0 px-4 gap-1.5 shadow-sm text-xs sm:text-sm font-semibold rounded-lg self-end sm:self-auto"
+              [disabled]="store.isTraversing() || !store.directoryPath().trim()">
+              <span>Scan & Select Files</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+        </form>
+      }
+
+      <!-- Mode 2: Direct File Path Mode -->
+      @if (store.directoryMode() === 'direct') {
+        <div class="flex flex-col gap-3 mt-3">
+          <div class="form-control">
+            <label class="label py-0.5 pb-1">
+              <span class="text-xs font-semibold text-base-content/80">Direct Log File Path on Server</span>
+            </label>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <input
+                type="text"
+                [ngModel]="store.directFilePath()"
+                (ngModelChange)="store.directFilePath.set($event)"
+                placeholder="/var/log/nginx/access.log"
+                class="input input-sm h-9 flex-1 font-mono text-xs sm:text-sm rounded-lg border-base-300 focus:outline-secondary/40 focus:border-secondary" />
+
+              <button
+                type="button"
+                (click)="store.verifyAndSelectDirectFile()"
+                class="btn btn-sm btn-secondary h-9 min-h-0 px-4 gap-1.5 text-xs sm:text-sm font-semibold rounded-lg shrink-0"
+                [disabled]="!store.directFilePath().trim() || store.fileVerifying()">
+                @if (store.fileVerifying()) {
+                  <span class="loading loading-spinner loading-xs"></span>
+                  <span>Verifying...</span>
+                } @else {
+                  <span>Verify & Inspect</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          @if (store.fileVerifyResult(); as res) {
+            <div class="alert py-2.5 px-3.5 text-xs sm:text-sm rounded-lg mt-1" [class.alert-success]="res.success" [class.alert-error]="!res.success">
+              <span>{{ res.message }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Mode 3: Upload Local File Mode -->
+      @if (store.directoryMode() === 'upload') {
+        <div class="flex flex-col gap-3 mt-3">
+          <div class="border border-dashed border-base-300 rounded-xl p-5 text-center bg-base-200/20 hover:border-primary/50 transition-colors">
+            <div class="p-2 bg-base-200 rounded-full w-fit mx-auto mb-2 text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            <h4 class="font-semibold text-sm text-base-content">Select a log file from your computer</h4>
+            <p class="text-xs text-base-content/70 mt-0.5 max-w-sm mx-auto">
+              Works with local <code class="font-mono bg-base-200 px-1 py-0.5 rounded">.log</code> or <code class="font-mono bg-base-200 px-1 py-0.5 rounded">.txt</code> files directly inside your browser.
+            </p>
+            <label class="btn btn-primary btn-outline btn-sm h-8 min-h-0 px-3.5 gap-1.5 mt-3 cursor-pointer rounded-lg text-xs font-semibold inline-flex">
+              <span>Browse File</span>
+              <input type="file" (change)="store.loadLocalFile($event)" accept=".log,.txt" class="hidden" />
+            </label>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

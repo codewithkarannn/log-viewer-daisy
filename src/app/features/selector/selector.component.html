@@ -1,0 +1,23 @@
+<div class="max-w-7xl mx-auto p-4 md:p-6 flex flex-col gap-4">
+  <!-- Toast Notification -->
+  @if (store.toastMessage(); as msg) {
+    <div class="toast toast-top toast-end z-50">
+      <div class="alert alert-info shadow-lg text-xs font-semibold py-2 px-4 rounded-xl">
+        <span>{{ msg }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Active Stage Router -->
+  @switch (store.currentStage()) {
+    @case ('directory') {
+      <app-directory-stage />
+    }
+    @case ('files') {
+      <app-file-stage />
+    }
+    @case ('logs') {
+      <app-log-stage />
+    }
+  }
+</div>

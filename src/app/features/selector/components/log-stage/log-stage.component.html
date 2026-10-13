@@ -1,0 +1,510 @@
+<div class="flex flex-col gap-4 animate-fade-in">
+  <!-- Top Action Bar -->
+  <div class="card bg-base-100 shadow-sm border border-base-200 rounded-2xl overflow-hidden">
+    <div class="p-4 md:p-5">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+        <!-- Left: Prominent Back Button + File Details -->
+        <div class="flex items-start md:items-center gap-3">
+          <button
+            type="button"
+            (click)="store.goToStage('files')"
+            class="btn btn-sm btn-ghost bg-base-200 border border-base-300 gap-1.5 font-semibold shadow-sm transition-all text-xs rounded-lg"
+            title="Return to File List">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Back to Files</span>
+          </button>
+
+          <div class="divider divider-horizontal my-0 hidden md:flex"></div>
+
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-base md:text-lg font-bold text-base-content flex items-center gap-2">
+                {{ store.api.selectedFile()?.name || 'Log Stream' }}
+              </h2>
+              @if (store.api.selectedFile(); as f) {
+                <span class="badge badge-ghost badge-sm font-mono text-xs">{{ store.formatSize(f.size) }}</span>
+              }
+            </div>
+
+            <!-- Path with Copy Path Button -->
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-xs font-mono text-base-content/60 truncate max-w-xs md:max-w-lg" [title]="store.api.selectedFile()?.fullPath">
+                {{ store.api.selectedFile()?.fullPath }}
+              </span>
+              <div class="tooltip tooltip-right" data-tip="Copy full path">
+                <button
+                  (click)="store.copyToClipboard(store.api.selectedFile()?.fullPath || '', 'File path copied!')"
+                  class="btn btn-ghost btn-circle btn-xs text-base-content/50 hover:text-base-content"
+                  title="Copy full file path">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+              @if (store.copyFeedback(); as feedback) {
+                <span class="badge badge-success badge-xs font-mono text-xs">{{ feedback }}</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Actions (Refresh, Back to Directory) -->
+        <div class="flex items-center gap-2 self-start lg:self-center">
+          <!-- Back to Directory selection -->
+          <button
+            (click)="store.goToStage('directory')"
+            class="btn btn-sm btn-ghost border border-base-300 gap-1.5 text-xs rounded-lg"
+            title="Choose a different directory">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            <span>Change Dir</span>
+          </button>
+
+          <!-- Refresh Button -->
+          <button
+            (click)="store.refreshCurrentLogs()"
+            class="btn btn-sm btn-ghost bg-base-200 border border-base-300 gap-1.5 text-xs rounded-lg"
+            [disabled]="store.isTraversing()"
+            title="Refresh logs from server">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Analytical Breakdown Bar (Summary Metrics) -->
+      <div class="mt-4 pt-4 border-t border-base-200">
+        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+          <!-- Total Entries -->
+          <div class="stat p-2.5 bg-base-200/50 rounded-xl border border-base-300">
+            <div class="stat-title text-xs uppercase font-bold text-base-content/60">Total Logs</div>
+            <div class="stat-value text-lg font-mono text-primary font-bold">
+              {{ store.logSummary()?.totalCount | number }}
+            </div>
+          </div>
+
+          <!-- Errors -->
+          <div
+            (click)="store.logLevelFilter.set('ERROR')"
+            class="stat p-2.5 bg-error/10 hover:bg-error/20 rounded-xl border border-error/30 cursor-pointer transition-colors">
+            <div class="stat-title text-xs uppercase font-bold text-error">Errors</div>
+            <div class="stat-value text-lg font-mono text-error font-bold">
+              {{ store.logSummary()?.errorCount }}
+            </div>
+          </div>
+
+          <!-- Warnings -->
+          <div
+            (click)="store.logLevelFilter.set('WARN')"
+            class="stat p-2.5 bg-warning/10 hover:bg-warning/20 rounded-xl border border-warning/30 cursor-pointer transition-colors">
+            <div class="stat-title text-xs uppercase font-bold text-warning">Warnings</div>
+            <div class="stat-value text-lg font-mono text-warning font-bold">
+              {{ store.logSummary()?.warningCount }}
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div
+            (click)="store.logLevelFilter.set('INFO')"
+            class="stat p-2.5 bg-info/10 hover:bg-info/20 rounded-xl border border-info/30 cursor-pointer transition-colors">
+            <div class="stat-title text-xs uppercase font-bold text-info">Info</div>
+            <div class="stat-value text-lg font-mono text-info font-bold">
+              {{store.logSummary()?.infoCount }}
+            </div>
+          </div>
+
+          <!-- Debug / Other -->
+          <div
+            (click)="store.logLevelFilter.set('DEBUG')"
+            class="stat p-2.5 bg-base-200/50 hover:bg-base-200 rounded-xl border border-base-300 cursor-pointer transition-colors hidden md:block">
+            <div class="stat-title text-xs uppercase font-bold text-base-content/60">Debug/Trace</div>
+            <div class="stat-value text-lg font-mono text-base-content/70 font-bold">
+              {{ store.logSummary()?.debugCount }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Log Search & Filter Toolbar -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3 mt-4 pt-4 border-t border-base-200 items-center">
+        <!-- Search Query Box -->
+        <div class="md:col-span-5 relative">
+          <span class="absolute left-3 top-2.5 text-base-content/40">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            [ngModel]="store.logSearch()"
+            (ngModelChange)="store.logSearch.set($event)"
+            placeholder="Search across message, source, raw timestamp..."
+            class="input input-sm input-bordered w-full pl-9 pr-8 text-xs font-mono rounded-lg" />
+          @if (store.logSearch()) {
+            <button
+              (click)="store.logSearch.set('')"
+              class="absolute right-2.5 top-2 text-xs text-base-content/50 hover:text-base-content">
+              ✕
+            </button>
+          }
+        </div>
+
+        <!-- Level Filter Segmented Buttons -->
+        <div class="md:col-span-4 flex items-center gap-1 overflow-x-auto py-1">
+          <button
+            (click)="store.logLevelFilter.set('ALL')"
+            class="btn btn-xs rounded-md"
+            [class.btn-primary]="store.logLevelFilter() === 'ALL'"
+            [class.btn-ghost]="store.logLevelFilter() !== 'ALL'">
+            ALL
+          </button>
+          <button
+            (click)="store.logLevelFilter.set('ERROR')"
+            class="btn btn-xs rounded-md"
+            [class.btn-error]="store.logLevelFilter() === 'ERROR'"
+            [class.btn-ghost]="store.logLevelFilter() !== 'ERROR'">
+            ERROR
+          </button>
+          <button
+            (click)="store.logLevelFilter.set('WARN')"
+            class="btn btn-xs rounded-md"
+            [class.btn-warning]="store.logLevelFilter() === 'WARN'"
+            [class.btn-ghost]="store.logLevelFilter() !== 'WARN'">
+            WARN
+          </button>
+          <button
+            (click)="store.logLevelFilter.set('INFO')"
+            class="btn btn-xs rounded-md"
+            [class.btn-info]="store.logLevelFilter() === 'INFO'"
+            [class.btn-ghost]="store.logLevelFilter() !== 'INFO'">
+            INFO
+          </button>
+        </div>
+
+        <!-- Source Filter & Wrap Toggle -->
+        <div class="md:col-span-3 flex items-center justify-end gap-2">
+          @if (store.uniqueSources().length > 1) {
+            <select
+              [ngModel]="store.logSourceFilter()"
+              (ngModelChange)="store.logSourceFilter.set($event)"
+              class="select select-bordered select-xs text-xs max-w-28 font-mono rounded-lg">
+              <option value="ALL">All Sources</option>
+              @for (src of store.uniqueSources(); track src) {
+                <option [value]="src">{{ src }}</option>
+              }
+            </select>
+          }
+
+          <!-- Wrap lines toggle -->
+          <label class="label cursor-pointer gap-1.5 p-0" title="Wrap long log messages">
+            <span class="label-text text-xs text-base-content/70">Wrap</span>
+            <input
+              type="checkbox"
+              [ngModel]="store.wrapLines()"
+              (ngModelChange)="store.wrapLines.set($event)"
+              class="toggle toggle-primary toggle-xs" />
+          </label>
+
+          <!-- Page size select -->
+          <select
+            [ngModel]="store.pageSize()"
+            (ngModelChange)="store.onPageSizeChange($event)"
+            class="select select-bordered select-xs text-xs font-mono rounded-lg">
+            @for (opt of store.pageSizeOptions; track opt) {
+              <option [value]="opt">{{ opt }}/pg</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Stream Table / Console -->
+  <div class="card bg-base-100 shadow-sm border border-base-200 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto max-h-[600px]">
+      <table class="table table-xs font-mono w-full table-pin-rows">
+        <thead>
+        <tr class="text-xs uppercase text-base-content/60 border-b border-base-200 bg-base-200/50">
+          <th class="w-12 text-center">#</th>
+          <th class="w-44">Timestamp</th>
+          <th class="w-20">Level</th>
+          <th class="w-32">Source</th>
+          <th>Message</th>
+          <th class="w-28 text-right pr-4">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+          @for (entry of store.filteredLogs(); track entry.id) {
+            <tr
+              (click)="store.openLogDetail(entry)"
+              class="cursor-pointer group hover:bg-base-200/70 transition-colors border-b border-base-200"
+              [class.bg-error/5]="entry.level.toUpperCase().includes('ERR')"
+              [class.bg-warning/5]="entry.level.toUpperCase().includes('WARN')">
+
+              <!-- Row ID -->
+            <td class="text-center text-base-content/40 text-xs select-none">
+              {{ entry.id }}
+            </td>
+
+            <!-- Formatted Timestamp -->
+            <td class="text-xs text-base-content/70 whitespace-nowrap font-mono">
+              {{ entry.timestamp | date:'dd-MMM-yy HH:mm:ss.SSS' }}
+            </td>
+
+            <!-- Level Badge -->
+            <td>
+              @if (entry.level.toUpperCase().includes('ERR') || entry.level.toUpperCase().includes('FATAL')) {
+                <span class="badge badge-error badge-xs font-bold text-xs uppercase">ERROR</span>
+              } @else if (entry.level.toUpperCase().includes('WARN')) {
+                <span class="badge badge-warning badge-xs font-bold text-xs uppercase">WARN</span>
+              } @else if (entry.level.toUpperCase().includes('INFO')) {
+                <span class="badge badge-info badge-xs font-bold text-xs uppercase">INFO</span>
+              } @else {
+                <span class="badge badge-ghost badge-xs font-mono text-xs uppercase">{{ entry.level }}</span>
+              }
+            </td>
+
+            <!-- Source -->
+            <td class="text-xs text-primary font-semibold truncate max-w-32" [title]="entry.source">
+              [{{ entry.source || 'default' }}]
+            </td>
+
+            <!-- Message -->
+            <td class="text-xs text-base-content font-mono py-2" [class.whitespace-nowrap]="!store.wrapLines()">
+              {{ entry.message }}
+            </td>
+
+            <!-- Action Buttons with Hover Tooltips -->
+            <td class="text-right pr-3 whitespace-nowrap">
+              <div class="inline-flex items-center justify-end gap-1">
+
+                <!-- 1. Tooltip: Copy Message -->
+                <div class="tooltip tooltip-left" data-tip="Copy Message">
+                  <button
+                    type="button"
+                    (click)="copyMessage(entry); $event.stopPropagation()"
+                    class="btn btn-ghost btn-circle btn-xs text-base-content/40 hover:text-primary hover:bg-base-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- 2. Tooltip: Copy Full Row -->
+                <div class="tooltip tooltip-left" data-tip="Copy Full Row">
+                  <button
+                    type="button"
+                    (click)="copyFullRow(entry); $event.stopPropagation()"
+                    class="btn btn-ghost btn-circle btn-xs text-base-content/40 hover:text-primary hover:bg-base-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- 3. Tooltip: Inspect Log -->
+                <div class="tooltip tooltip-left" data-tip="Inspect Log">
+                  <button
+                    type="button"
+                    (click)="store.openLogDetail(entry); $event.stopPropagation()"
+                    class="btn btn-ghost btn-circle btn-xs text-base-content/40 hover:text-primary hover:bg-base-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </button>
+                </div>
+
+              </div>
+            </td>
+            </tr>
+          }
+
+          @if (store.filteredLogs().length === 0) {
+            <tr>
+              <td colspan="6" class="text-center py-12 text-base-content/50">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <p class="text-xs">No log entries found matching current filters.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls Footer -->
+    <div class="p-3 bg-base-200/50 border-t border-base-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="text-xs text-base-content/70 font-mono">
+        Showing <span class="font-bold text-base-content">{{ store.filteredLogs().length }}</span> entries
+        (Page {{ store.currentPage() }} of {{ store.totalPages() }}, Total: {{ store.totalLogEntries() }})
+      </div>
+
+      <div class="join">
+        <button
+          class="join-item btn btn-xs btn-outline"
+          [disabled]="store.currentPage() <= 1"
+          (click)="store.onPageChange(1)">
+          « First
+        </button>
+        <button
+          class="join-item btn btn-xs btn-outline"
+          [disabled]="store.currentPage() <= 1"
+          (click)="store.onPageChange(store.currentPage() - 1)">
+          ‹ Prev
+        </button>
+        <button class="join-item btn btn-xs btn-disabled font-mono text-xs">
+          {{ store.currentPage() }} / {{ store.totalPages() }}
+        </button>
+        <button
+          class="join-item btn btn-xs btn-outline"
+          [disabled]="store.currentPage() >= store.totalPages()"
+          (click)="store.onPageChange(store.currentPage() + 1)">
+          Next ›
+        </button>
+        <button
+          class="join-item btn btn-xs btn-outline"
+          [disabled]="store.currentPage() >= store.totalPages()"
+          (click)="store.onPageChange(store.totalPages())">
+          Last »
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- Log Detail Inspector Modal Popup                        -->
+  <!-- ======================================================== -->
+  @if (store.detailModalOpen() && store.selectedLogEntry(); as log) {
+    <div class="modal modal-open z-50">
+      <div class="modal-box max-w-2xl bg-base-100 border border-base-200 rounded-2xl shadow-2xl p-5 flex flex-col gap-4">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b border-base-200 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="p-1.5 rounded-lg bg-base-200 text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-base-content">Log Entry Details</h3>
+              <p class="text-xs text-base-content/60 font-mono">Row #{{ log.id }}</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="store.closeLogDetail()"
+            class="btn btn-sm btn-circle btn-ghost text-base-content/60 hover:text-base-content">
+            ✕
+          </button>
+        </div>
+
+        <!-- Meta Summary Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-base-200/50 rounded-xl border border-base-200 text-xs font-mono">
+          <div>
+            <span class="text-base-content/50 block text-[11px] uppercase font-bold">Severity</span>
+            <span class="badge badge-sm font-bold text-xs"
+                  [class.badge-error]="log.level.toUpperCase().includes('ERR')"
+                  [class.badge-warning]="log.level.toUpperCase().includes('WARN')"
+                  [class.badge-info]="log.level.toUpperCase().includes('INFO')"
+                  [class.badge-ghost]="!log.level.toUpperCase().includes('ERR') && !log.level.toUpperCase().includes('WARN') && !log.level.toUpperCase().includes('INFO')">
+              {{ log.level }}
+            </span>
+          </div>
+
+          <div class="col-span-2">
+            <span class="text-base-content/50 block text-[11px] uppercase font-bold">Timestamp</span>
+            <span class="text-base-content/80">{{ log.timestamp | date:'dd-MMM-yy HH:mm:ss.SSS' }}</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-base-200/50 rounded-xl border border-base-200 text-xs font-mono">
+          <div>
+            <span class="text-base-content/50 block text-[11px] uppercase font-bold">Source</span>
+            <span class="font-semibold text-primary" [title]="log.source">{{ log.source || 'default' }}</span>
+          </div>
+        </div>
+
+        <!-- Log Message View -->
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-base-content/70 uppercase">Message Content</span>
+            <div class="tooltip tooltip-left" data-tip="Copy Message">
+              <button
+                type="button"
+                (click)="copyMessage(log)"
+                class="btn btn-xs btn-ghost gap-1 font-medium text-xs text-primary hover:bg-primary/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span>Copy Message</span>
+              </button>
+            </div>
+          </div>
+          <div class="p-3 bg-base-200/60 rounded-xl border border-base-300 max-h-56 overflow-y-auto font-mono text-xs leading-relaxed text-base-content break-words select-all">
+            {{ log.message }}
+          </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="modal-action border-t border-base-200 pt-3 mt-1 flex items-center justify-between">
+          <div>
+            @if (store.copyFeedback(); as fb) {
+              <span class="badge badge-success badge-sm font-mono text-xs">{{ fb }}</span>
+            }
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- 1. Copy Message Only -->
+            <button
+              type="button"
+              (click)="copyMessage(log)"
+              class="btn btn-sm btn-ghost border border-base-300 text-xs rounded-lg gap-1.5 font-medium">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span>Copy Message</span>
+            </button>
+
+            <!-- 2. Copy Complete Row -->
+            <button
+              type="button"
+              (click)="copyFullRow(log)"
+              class="btn btn-sm btn-ghost border border-base-300 text-xs rounded-lg gap-1.5 font-medium">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Copy Full Row</span>
+            </button>
+
+            <!-- Close Button -->
+            <button
+              type="button"
+              (click)="store.closeLogDetail()"
+              class="btn btn-sm btn-primary text-xs rounded-lg px-4 font-semibold">
+              Close
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Backdrop -->
+      <form method="dialog" class="modal-backdrop">
+        <button type="button" (click)="store.closeLogDetail()">close</button>
+      </form>
+    </div>
+  }
+</div>

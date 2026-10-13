@@ -1,0 +1,50 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+/* Smooth stage & modal transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* High-performance terminal / console scrollbar */
+.console-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--bc) / 0.2) transparent;
+}
+
+.console-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.console-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.console-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--bc) / 0.2);
+  border-radius: 9999px;
+}
+
+.console-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--bc) / 0.4);
+}
+
+/* Micro typography */
+.text-2xs {
+  font-size: 0.6875rem;
+  line-height: 0.95rem;
+}

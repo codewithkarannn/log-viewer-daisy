@@ -1,0 +1,237 @@
+<div class="flex flex-col gap-4 animate-fade-in">
+  <!-- Top Action Bar & Directory Context Card -->
+  <div class="card bg-base-100 border border-base-200 shadow-sm rounded-2xl overflow-hidden">
+    <!-- Top Bar -->
+    <div class="px-4 py-2.5 md:px-5">
+      <div class="flex flex-wrap items-center justify-between gap-2.5">
+
+        <!-- Left: Back Button, Title & Compact Directory Path Pill -->
+        <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 min-w-0">
+          <button
+            type="button"
+            (click)="store.goToStage('directory')"
+            class="btn btn-xs h-7 min-h-0 px-2.5 btn-ghost bg-base-200 border border-base-300 gap-1.5 font-medium rounded-lg text-xs"
+            title="Return to Directory Selection">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-base-content/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Change Directory</span>
+          </button>
+
+          <div class="h-4 w-px bg-base-300 hidden sm:block"></div>
+
+          <h2 class="font-bold text-sm text-base-content shrink-0">Select Log File</h2>
+
+          <!-- Inline Directory Path -->
+          <div
+            class="inline-flex items-center gap-1.5 bg-base-200/60 px-2 h-7 rounded-md border border-base-300 max-w-[200px] sm:max-w-xs md:max-w-sm"
+            [title]="store.directoryPath()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-warning shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+            </svg>
+            <span class="text-xs font-mono text-base-content/70 truncate">
+              {{ store.directoryPath() }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: Inline Stats & Rescan Action -->
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-2 bg-base-200/60 px-2.5 h-7 rounded-lg border border-base-300 text-xs font-mono">
+            <div>
+              <span class="text-base-content/60">Files: </span>
+              <span class="font-bold text-primary">{{ store.filteredFiles().length }}</span>
+              <span class="text-base-content/40">/{{ store.api.files().length }}</span>
+            </div>
+            <div class="h-3 w-px bg-base-300"></div>
+            <div>
+              <span class="text-base-content/60">Size: </span>
+              <span class="font-bold text-base-content/80">{{ store.formatSize(store.totalDirectorySize()) }}</span>
+            </div>
+          </div>
+
+          <button
+            (click)="store.scanDirectory()"
+            class="btn btn-xs h-7 min-h-0 px-2.5 btn-ghost bg-base-200 border border-base-300 gap-1 text-xs rounded-lg font-medium"
+            title="Rescan Directory">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-base-content/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Rescan</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar Strip -->
+    <div class="px-4 py-2.5 bg-base-200/30 border-t border-base-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <!-- Search Input -->
+      <div class="relative flex-1 max-w-md">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/40">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          [ngModel]="store.fileSearch()"
+          (ngModelChange)="store.fileSearch.set($event)"
+          placeholder="Filter files by name or path..."
+          class="input input-sm input-bordered w-full pl-9 pr-8 text-xs rounded-lg bg-base-100 focus:outline-primary/40 focus:border-primary" />
+        @if (store.fileSearch()) {
+          <button
+            (click)="store.fileSearch.set('')"
+            class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-base-content/40 hover:text-base-content transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        }
+      </div>
+
+      <!-- Type Filter & Sort Controls -->
+      <div class="flex items-center gap-2 self-end md:self-auto w-full md:w-auto justify-between md:justify-end">
+        <!-- Segmented Type Selector -->
+        <div class="join bg-base-200/80 p-0.5 rounded-lg border border-base-300 shadow-inner flex items-center h-7">
+          <button
+            (click)="store.fileTypeFilter.set('ALL')"
+            class="join-item btn btn-xs h-6 min-h-0 px-2 rounded-md border-0 text-xs font-medium transition-all"
+            [class.btn-primary]="store.fileTypeFilter() === 'ALL'"
+            [class.btn-ghost]="store.fileTypeFilter() !== 'ALL'">
+            ALL
+          </button>
+          <button
+            (click)="store.fileTypeFilter.set('LOG')"
+            class="join-item btn btn-xs h-6 min-h-0 px-2 rounded-md border-0 text-xs font-medium transition-all"
+            [class.btn-primary]="store.fileTypeFilter() === 'LOG'"
+            [class.btn-ghost]="store.fileTypeFilter() !== 'LOG'">
+            .LOG
+          </button>
+          <button
+            (click)="store.fileTypeFilter.set('TXT')"
+            class="join-item btn btn-xs h-6 min-h-0 px-2 rounded-md border-0 text-xs font-medium transition-all"
+            [class.btn-primary]="store.fileTypeFilter() === 'TXT'"
+            [class.btn-ghost]="store.fileTypeFilter() !== 'TXT'">
+            .TXT
+          </button>
+        </div>
+
+        <!-- Sort Select -->
+        <div class="relative flex items-center">
+          <select
+            [ngModel]="store.fileSortBy()"
+            (ngModelChange)="store.fileSortBy.set($event)"
+            class="select select-bordered select-xs h-7 min-h-0 text-xs font-medium bg-base-100 rounded-lg pl-2 pr-6">
+            <option value="date-desc">Modified (Newest)</option>
+            <option value="date-asc">Modified (Oldest)</option>
+            <option value="name-asc">File Name (A-Z)</option>
+            <option value="name-desc">File Name (Z-A)</option>
+            <option value="size-desc">Size (Largest)</option>
+            <option value="size-asc">Size (Smallest)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Table List -->
+  @if (store.filteredFiles().length > 0) {
+    <div class="card bg-base-100 border border-base-200 shadow-sm rounded-2xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+          <tr class="text-xs uppercase tracking-wider text-base-content/60 border-b border-base-200 bg-base-200/40">
+            <th class="py-3 px-4">Log File Name</th>
+            <th>Server Path</th>
+            <th>Size</th>
+            <th>Last Modified</th>
+            <th class="text-right px-4">Action</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-base-200">
+            @for (file of store.filteredFiles(); track file.fullPath) {
+              <tr
+                (click)="store.selectFileAndTraverse(file)"
+                class="cursor-pointer group hover:bg-base-200/40 transition-colors">
+                <!-- File Name & Extension Badge -->
+                <td class="font-medium text-sm py-3 px-4">
+                  <div class="flex items-center gap-2.5">
+                    <div class="p-1.5 rounded-lg bg-base-200 text-primary group-hover:bg-primary group-hover:text-primary-content transition-colors shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <span class="font-semibold text-base-content group-hover:text-primary transition-colors truncate max-w-xs md:max-w-sm">
+                      {{ file.name }}
+                    </span>
+                    @if (file.name.toLowerCase().endsWith('.log')) {
+                      <span class="badge badge-info/10 text-info border-info/20 badge-xs font-mono font-bold">LOG</span>
+                    } @else {
+                      <span class="badge badge-neutral/10 text-neutral-content border-neutral/20 badge-xs font-mono font-bold">TXT</span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Full Path -->
+                <td class="text-xs font-mono text-base-content/60 max-w-xs truncate" [title]="file.fullPath">
+                  {{ file.fullPath }}
+                </td>
+
+                <!-- File Size -->
+                <td class="text-xs font-mono whitespace-nowrap">
+                  <span class="badge badge-ghost badge-sm font-mono border-base-200 text-xs">
+                    {{ store.formatSize(file.size) }}
+                  </span>
+                </td>
+
+                <!-- Modified Date -->
+                <td class="text-xs text-base-content/70 whitespace-nowrap">
+                  {{ file.lastModified | date:'dd MMM yyyy, HH:mm:ss' }}
+                </td>
+
+                <!-- Action Button -->
+                <td class="text-right whitespace-nowrap px-4">
+                  <button
+                    type="button"
+                    (click)="store.selectFileAndTraverse(file); $event.stopPropagation()"
+                    class="btn btn-xs btn-primary gap-1 shadow-sm font-medium rounded-lg">
+                    <span>Inspect</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <!-- Empty State -->
+    <div class="card bg-base-100 border border-base-200 shadow-sm rounded-2xl">
+      <div class="card-body p-12 text-center items-center">
+        <div class="p-4 rounded-2xl bg-base-200 text-base-content/40 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 class="text-base font-bold text-base-content">No log files matched</h3>
+        <p class="text-xs text-base-content/60 max-w-sm mt-1">
+          @if (store.fileSearch()) {
+            No files in this directory match "{{ store.fileSearch() }}". Try clearing your search term.
+          } @else {
+            No .log or .txt files found in {{ store.directoryPath() }}. Please select another folder.
+          }
+        </p>
+        <div class="flex items-center gap-2 mt-4">
+          @if (store.fileSearch()) {
+            <button (click)="store.fileSearch.set('')" class="btn btn-sm btn-ghost rounded-lg text-xs">Clear Filter</button>
+          }
+          <button (click)="store.goToStage('directory')" class="btn btn-sm btn-primary rounded-lg text-xs">Choose Different Directory</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
